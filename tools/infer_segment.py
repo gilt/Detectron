@@ -148,12 +148,9 @@ def main(args):
             kp_thresh=2,
             classes_dataset=all_classes
         )
-        found = False
         for index, value in enumerate(segmented_images):
-            if classes_predicted[index] == args.class_label and not found:
-                print("HERE")
-                cv2.imwrite(args.output_dir + '/' + args.class_label + '_' + `index` + ".png", value)
-                found = True
+            if classes_predicted[index] == args.class_label:
+                cv2.imwrite(args.output_dir + '/' + args.class_label + '_' + `i` + '_' + `index` + ".png", value)
 
 if __name__ == '__main__':
     workspace.GlobalInit(['caffe2', '--caffe2_log_level=0'])

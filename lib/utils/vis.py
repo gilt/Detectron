@@ -24,6 +24,8 @@ import cv2
 import numpy as np
 import os
 
+import sys
+
 import pycocotools.mask as mask_util
 
 from utils.colormap import colormap
@@ -302,6 +304,7 @@ def segmented_images(
         im, im_name, output_dir, boxes, segms=None, keypoints=None, thresh=0.9,
         kp_thresh=2, dpi=200, box_alpha=0.0, classes_dataset=[]):
     """Extract segmented images."""
+
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
@@ -351,9 +354,12 @@ def segmented_images(
                 img_countour = np.zeros([h, w, 3])
                 for channel in range(3):
                     img_countour[:, :, channel] = img[y:h + y, x:w + x, channel]
-                segmented_images.insert(len(segmented_images), img_countour)
-                segmented_classes.insert(len(segmented_classes), classes_dataset[i])
-                segmented_scores.insert(len(segmented_scores), score)
+                if i < len(classes_dataset):
+                    segmented_images.insert(len(segmented_images), img_countour)
+                    segmented_classes.insert(len(segmented_classes), classes_dataset[i])
+                    segmented_scores.insert(len(segmented_scores), score)
+                else:
+                    sys.stderr.write("Class with index {} out of range".format(i))
     return segmented_images, segmented_classes, segmented_scores
 
 

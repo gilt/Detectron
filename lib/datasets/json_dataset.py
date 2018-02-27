@@ -53,20 +53,29 @@ logger = logging.getLogger(__name__)
 class JsonDataset(object):
     """A class representing a COCO json dataset."""
 
-    def __init__(self, name):
-        assert name in DATASETS.keys(), \
-            'Unknown dataset name: {}'.format(name)
-        assert os.path.exists(DATASETS[name][IM_DIR]), \
-            'Image directory \'{}\' not found'.format(DATASETS[name][IM_DIR])
-        assert os.path.exists(DATASETS[name][ANN_FN]), \
-            'Annotation file \'{}\' not found'.format(DATASETS[name][ANN_FN])
-        logger.debug('Creating: {}'.format(name))
-        self.name = name
-        self.image_directory = DATASETS[name][IM_DIR]
-        self.image_prefix = (
-            '' if IM_PREFIX not in DATASETS[name] else DATASETS[name][IM_PREFIX]
-        )
-        self.COCO = COCO(DATASETS[name][ANN_FN])
+    def __init__(self, name, dataset=None):
+        if name is not None:
+            assert name in DATASETS.keys(), \
+                'Unknown dataset name: {}'.format(name)
+            assert os.path.exists(DATASETS[name][IM_DIR]), \
+                'Image directory \'{}\' not found'.format(DATASETS[name][IM_DIR])
+            assert os.path.exists(DATASETS[name][ANN_FN]), \
+                'Annotation file \'{}\' not found'.format(DATASETS[name][ANN_FN])
+            logger.debug('Creating: {}'.format(name))
+            self.name = name
+            self.image_directory = DATASETS[name][IM_DIR]
+            self.image_prefix = (
+                '' if IM_PREFIX not in DATASETS[name] else DATASETS[name][IM_PREFIX]
+            )
+            self.COCO = COCO(DATASETS[name][ANN_FN])
+        else:
+            logger.debug('Creating: {}'.format(dataset))
+            self.name = 'Custom'
+            self.image_directory = dataset['DATASET']['IM_DIR']
+            self.image_prefix = (
+                '' if 'IM_PREFIX' not in dataset['DATASET'] else dataset['DATASET']['IM_PREFIX']
+            )
+            self.COCO = COCO(dataset['DATASET']['ANN_FN'])
         self.debug_timer = Timer()
         # Set up dataset classes
         category_ids = self.COCO.getCatIds()
