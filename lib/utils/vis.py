@@ -300,8 +300,7 @@ def vis_one_image_opencv(
 
 def segmented_images(
         im, im_name, output_dir, boxes, segms=None, keypoints=None, thresh=0.9,
-        kp_thresh=2, dpi=200, box_alpha=0.0, dataset=None, show_class=False,
-        ext='pdf'):
+        kp_thresh=2, dpi=200, box_alpha=0.0, classes_dataset=[]):
     """Extract segmented images."""
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -343,15 +342,17 @@ def segmented_images(
 
             for channel in range(3):
                 img[:,:, channel] = im[:,:, channel] * e[:,:]
+
             _, contour, hier = cv2.findContours(
                 e.copy(), cv2.RETR_CCOMP, cv2.CHAIN_APPROX_NONE)
+
             for c in contour:
                 x, y, w, h = cv2.boundingRect(c)
                 img_countour = np.zeros([h, w, 3])
                 for channel in range(3):
                     img_countour[:, :, channel] = img[y:h + y, x:w + x, channel]
                 segmented_images.insert(len(segmented_images), img_countour)
-                segmented_classes.insert(len(segmented_classes), dataset.classes[classes[i]])
+                segmented_classes.insert(len(segmented_classes), classes_dataset[i])
                 segmented_scores.insert(len(segmented_scores), score)
     return segmented_images, segmented_classes, segmented_scores
 

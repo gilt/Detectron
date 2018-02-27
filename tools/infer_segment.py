@@ -24,6 +24,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from datasets.roidb import combined_roidb_for_training
 from collections import defaultdict
 import argparse
 import cv2  # NOQA (Must import before importing caffe2 due to bug in cv2)
@@ -104,8 +105,11 @@ def main(args):
     cfg.TEST.WEIGHTS = args.weights
     cfg.NUM_GPUS = 1
     assert_and_infer_cfg()
+    roidb = combined_roidb_for_training(
+        cfg.TRAIN.DATASETS, cfg.TRAIN.PROPOSAL_FILES
+    )
+    all_classes = roidb[0]['dataset'].classes
     model = infer_engine.initialize_model_from_cfg()
-    dummy_coco_dataset = dummy_datasets.get_coco_dataset()
 
     if os.path.isdir(args.im_or_folder):
         im_list = glob.iglob(args.im_or_folder + '/*.' + args.image_ext)
@@ -132,23 +136,22 @@ def main(args):
                 ' \ Note: inference on the first image will be slower than the '
                 'rest (caches and auto-tuning need to warm up)'
             )
-
-        segmented_images, classes, scores = vis_utils.segmented_images(
+        segmented_images, classes_predicted, scores = vis_utils.segmented_images(
             im,
             im_name,
             args.output_dir,
             cls_boxes,
             cls_segms,
             cls_keyps,
-            dataset=dummy_coco_dataset,
-            box_alpha=0.3,
-            show_class=True,
-            thresh=0.7,
-            kp_thresh=2
+            box_alpha=0.1,
+            thresh=0.2,
+            kp_thresh=2,
+            classes_dataset=all_classes
         )
         found = False
         for index, value in enumerate(segmented_images):
-            if classes[index] == args.class_label and not found:
+            if classes_predicted[index] == args.class_label and not found:
+                print("HERE")
                 cv2.imwrite(args.output_dir + '/' + args.class_label + '_' + `index` + ".png", value)
                 found = True
 
